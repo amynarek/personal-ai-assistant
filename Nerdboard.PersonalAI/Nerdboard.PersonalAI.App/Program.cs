@@ -5,9 +5,13 @@ IConfigurationRoot config = new ConfigurationBuilder()
             .AddUserSecrets<Program>()
             .Build();
 
+var telegramApiKey = config["Telegram:ApiKey"];
+if (telegramApiKey == null)
+    throw new InvalidOperationException("Set Telegram:ApiKey in env variables");
+
 using var cts = new CancellationTokenSource();
 
-var bot = new TelegramBotClient(config["Telegram:ApiKey"], cancellationToken: cts.Token);
+var bot = new TelegramBotClient(telegramApiKey, cancellationToken: cts.Token);
 var me = await bot.GetMe();
 
 bot.OnMessage += OnMessage;
