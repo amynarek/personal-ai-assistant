@@ -1,0 +1,8 @@
+services:
+  nerdboard.personalai.app:
+    image: ${DOCKER_REGISTRY-}nerdboardpersonalaiapp
+    environment:
+      - Telegram__ApiKey=pipa
+    build:
+      context: .
+      dockerfile: Nerdboard.PersonalAI.App/Dockerfile

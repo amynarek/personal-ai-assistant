@@ -1,32 +1,38 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Telegram.Bot;
+
+Console.WriteLine("Service is starting...");
 
 IConfigurationRoot config = new ConfigurationBuilder()
             .AddUserSecrets<Program>()
+            .AddEnvironmentVariables()
             .Build();
 
-var telegramApiKey = config["Telegram:ApiKey"];
-if (telegramApiKey == null)
-    throw new InvalidOperationException("Set Telegram:ApiKey in env variables");
+
+var services = new ServiceCollection();
+
+// var builder = Host.CreateApplicationBuilder(args);
+// builder.Services.AddOptions<TelegramConfig>().Bind(config.GetSection("Telegram"));// ();
+// builder.Services.AddSingleton<BotService>();
+
+services.AddOptions<TelegramConfig>().Bind(config.GetSection("Telegram"));// ();
+services.AddSingleton<BotService>();
+var svcProvider = services.BuildServiceProvider();
+
+Console.WriteLine("Started!");
 
 using var cts = new CancellationTokenSource();
 
-var bot = new TelegramBotClient(telegramApiKey, cancellationToken: cts.Token);
-var me = await bot.GetMe();
 
-bot.OnMessage += OnMessage;
+var botSvc = svcProvider.GetRequiredService<BotService>();
+await botSvc.Start(cts.Token);
 
-Console.WriteLine($"Jestem {me.FirstName}. I słucham :)");
-Console.ReadLine();
+Console.WriteLine("Press Enter key to exit...");
+Console.In.ReadLine();
+
 cts.Cancel();
 
-
-async Task OnMessage(Telegram.Bot.Types.Message message, Telegram.Bot.Types.Enums.UpdateType type)
-{
-    if (message.Text is null) 
-        return;	
-
-    Console.WriteLine($"Otrzymana wiadomość typu {type} '{message.Text}' in {message.Chat}");
-
-    await bot.SendMessage(message.Chat, $"Otrzymałem wiadomość: {message.Text}");
-}
+// host.Run();            
