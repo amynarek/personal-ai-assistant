@@ -1,0 +1,7 @@
+services:
+  nerdboard.personalai.app:
+    image: ${DOCKER_REGISTRY-}nerdboardpersonalaiapp
+    env_file: "Nerdboard.PersonalAI.App/.env"
+    build:
+      context: .
+      dockerfile: Nerdboard.PersonalAI.App/Dockerfile
